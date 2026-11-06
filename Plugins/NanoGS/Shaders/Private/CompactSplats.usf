@@ -104,3 +104,10 @@ void MainCS(uint3 DispatchThreadId : SV_DispatchThreadID)
 		CompactedSplatIndices[outputIndex] = splatIndex;
 	}
 }
+
+// Reset visible splat counter on GPU (avoids CPU LockBuffer which is invalid inside Vulkan render passes)
+[numthreads(1, 1, 1)]
+void ResetCounterCS(uint3 DispatchThreadId : SV_DispatchThreadID)
+{
+	VisibleSplatCount[0] = 0;
+}

@@ -81,6 +81,25 @@ class FGaussianSplatCalcViewDataCS : public FGlobalShader
 //----------------------------------------------------------------------
 
 /**
+ * Compute shader to reset the visible splat counter on the GPU.
+ * Eliminates CPU LockBuffer stalls and avoids Vulkan IsOutsideRenderPass assertion.
+ */
+class FCompactSplatsResetCS : public FGlobalShader
+{
+	DECLARE_GLOBAL_SHADER(FCompactSplatsResetCS);
+	SHADER_USE_PARAMETER_STRUCT(FCompactSplatsResetCS, FGlobalShader);
+
+	BEGIN_SHADER_PARAMETER_STRUCT(FParameters, )
+		SHADER_PARAMETER_UAV(RWStructuredBuffer<uint>, VisibleSplatCount)
+	END_SHADER_PARAMETER_STRUCT()
+
+	static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
+	{
+		return IsFeatureLevelSupported(Parameters.Platform, ERHIFeatureLevel::SM5);
+	}
+};
+
+/**
  * Compute shader that builds a compact list of visible splat indices
  * This enables subsequent passes to only process visible splats
  */
