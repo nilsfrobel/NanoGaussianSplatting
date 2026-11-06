@@ -176,13 +176,8 @@ void FGaussianSplatRenderData::CreateGPUBuffers(FRHICommandListBase& RHICmdList)
 	// --- Packed splat buffer ---
 	if (PackedSplatData.Num() > 0)
 	{
-		FRHIBufferCreateDesc Desc = FRHIBufferCreateDesc::Create(
-			TEXT("GaussianPackedSplatBuffer"),
-			PackedSplatData.Num(),
-			0,
-			BUF_Static | BUF_ShaderResource | BUF_ByteAddressBuffer)
-			.SetInitialState(ERHIAccess::SRVMask);
-		PackedSplatBuffer = RHICmdList.CreateBuffer(Desc);
+		FRHIResourceCreateInfo Info(TEXT("GaussianPackedSplatBuffer"));
+		PackedSplatBuffer = RHICmdList.CreateBuffer(PackedSplatData.Num(), BUF_Static | BUF_ShaderResource | BUF_ByteAddressBuffer, 0, ERHIAccess::SRVMask, Info);
 
 		void* Data = RHICmdList.LockBuffer(PackedSplatBuffer, 0, PackedSplatData.Num(), RLM_WriteOnly);
 		FMemory::Memcpy(Data, PackedSplatData.GetData(), PackedSplatData.Num());
@@ -202,13 +197,8 @@ void FGaussianSplatRenderData::CreateGPUBuffers(FRHICommandListBase& RHICmdList)
 			SHDataSize = 16;
 		}
 
-		FRHIBufferCreateDesc Desc = FRHIBufferCreateDesc::Create(
-			TEXT("GaussianSHBuffer"),
-			SHDataSize,
-			0,
-			BUF_Static | BUF_ShaderResource | BUF_ByteAddressBuffer)
-			.SetInitialState(ERHIAccess::SRVMask);
-		SHBuffer = RHICmdList.CreateBuffer(Desc);
+		FRHIResourceCreateInfo Info(TEXT("GaussianSHBuffer"));
+		SHBuffer = RHICmdList.CreateBuffer(SHDataSize, BUF_Static | BUF_ShaderResource | BUF_ByteAddressBuffer, 0, ERHIAccess::SRVMask, Info);
 
 		void* Data = RHICmdList.LockBuffer(SHBuffer, 0, SHDataSize, RLM_WriteOnly);
 		if (SHData.Num() > 0)
@@ -236,13 +226,8 @@ void FGaussianSplatRenderData::CreateGPUBuffers(FRHICommandListBase& RHICmdList)
 		}
 
 		const uint32 ChunkSize = ChunkCount * sizeof(FGaussianChunkInfo);
-		FRHIBufferCreateDesc Desc = FRHIBufferCreateDesc::Create(
-			TEXT("GaussianChunkBuffer"),
-			ChunkSize,
-			sizeof(FGaussianChunkInfo),
-			BUF_Static | BUF_ShaderResource | BUF_StructuredBuffer)
-			.SetInitialState(ERHIAccess::SRVMask);
-		ChunkBuffer = RHICmdList.CreateBuffer(Desc);
+		FRHIResourceCreateInfo Info(TEXT("GaussianChunkBuffer"));
+		ChunkBuffer = RHICmdList.CreateBuffer(ChunkSize, BUF_Static | BUF_ShaderResource | BUF_StructuredBuffer, sizeof(FGaussianChunkInfo), ERHIAccess::SRVMask, Info);
 
 		void* Data = RHICmdList.LockBuffer(ChunkBuffer, 0, ChunkSize, RLM_WriteOnly);
 		if (CachedChunkData.Num() > 0)
@@ -266,13 +251,8 @@ void FGaussianSplatRenderData::CreateGPUBuffers(FRHICommandListBase& RHICmdList)
 	{
 		TArray<uint16> Indices = { 0, 1, 2, 1, 3, 2 };
 
-		FRHIBufferCreateDesc Desc = FRHIBufferCreateDesc::Create(
-			TEXT("GaussianSplatIndexBuffer"),
-			Indices.Num() * sizeof(uint16),
-			sizeof(uint16),
-			BUF_Static | BUF_IndexBuffer)
-			.SetInitialState(ERHIAccess::VertexOrIndexBuffer);
-		IndexBuffer = RHICmdList.CreateBuffer(Desc);
+		FRHIResourceCreateInfo Info(TEXT("GaussianSplatIndexBuffer"));
+		IndexBuffer = RHICmdList.CreateBuffer(Indices.Num() * sizeof(uint16), BUF_Static | BUF_IndexBuffer, sizeof(uint16), ERHIAccess::VertexOrIndexBuffer, Info);
 
 		void* Data = RHICmdList.LockBuffer(IndexBuffer, 0, Indices.Num() * sizeof(uint16), RLM_WriteOnly);
 		FMemory::Memcpy(Data, Indices.GetData(), Indices.Num() * sizeof(uint16));
@@ -284,13 +264,8 @@ void FGaussianSplatRenderData::CreateGPUBuffers(FRHICommandListBase& RHICmdList)
 	if (bHasClusterData && CachedClusterData.Num() > 0)
 	{
 		const uint32 BufferSize = CachedClusterData.Num() * sizeof(FGaussianGPUCluster);
-		FRHIBufferCreateDesc Desc = FRHIBufferCreateDesc::Create(
-			TEXT("GaussianClusterBuffer"),
-			BufferSize,
-			sizeof(FGaussianGPUCluster),
-			BUF_Static | BUF_ShaderResource | BUF_StructuredBuffer)
-			.SetInitialState(ERHIAccess::SRVMask);
-		ClusterBuffer = RHICmdList.CreateBuffer(Desc);
+		FRHIResourceCreateInfo Info(TEXT("GaussianClusterBuffer"));
+		ClusterBuffer = RHICmdList.CreateBuffer(BufferSize, BUF_Static | BUF_ShaderResource | BUF_StructuredBuffer, sizeof(FGaussianGPUCluster), ERHIAccess::SRVMask, Info);
 
 		void* Data = RHICmdList.LockBuffer(ClusterBuffer, 0, BufferSize, RLM_WriteOnly);
 		FMemory::Memcpy(Data, CachedClusterData.GetData(), BufferSize);
@@ -309,13 +284,8 @@ void FGaussianSplatRenderData::CreateGPUBuffers(FRHICommandListBase& RHICmdList)
 			? CachedSplatClusterIndices.Num() * sizeof(uint32)
 			: sizeof(uint32);  // dummy 1-element buffer for shader binding
 
-		FRHIBufferCreateDesc Desc = FRHIBufferCreateDesc::Create(
-			TEXT("GaussianSplatClusterIndexBuffer"),
-			BufferSize,
-			sizeof(uint32),
-			BUF_Static | BUF_ShaderResource | BUF_StructuredBuffer)
-			.SetInitialState(ERHIAccess::SRVMask);
-		SplatClusterIndexBuffer = RHICmdList.CreateBuffer(Desc);
+		FRHIResourceCreateInfo Info(TEXT("GaussianSplatClusterIndexBuffer"));
+		SplatClusterIndexBuffer = RHICmdList.CreateBuffer(BufferSize, BUF_Static | BUF_ShaderResource | BUF_StructuredBuffer, sizeof(uint32), ERHIAccess::SRVMask, Info);
 
 		void* Data = RHICmdList.LockBuffer(SplatClusterIndexBuffer, 0, BufferSize, RLM_WriteOnly);
 		if (CachedSplatClusterIndices.Num() > 0)

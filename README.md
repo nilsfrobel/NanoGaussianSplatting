@@ -4,7 +4,7 @@
 
 
 
-- Supported Unreal Engine version: `UE5.6` `UE5.7`
+- Supported Unreal Engine version: `UE5.5`
 - Download the plugin from release page to use it directly
 - The plugin download from repoitory need to be re-build
 
