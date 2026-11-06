@@ -676,22 +676,31 @@ void FGaussianSplatRenderer::DispatchCompactSplats(
 {
 	SCOPED_DRAW_EVENT(RHICmdList, GaussianSplatCompactSplats);
 
+	TShaderMapRef<FCompactSplatsResetCS> ResetShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 	TShaderMapRef<FCompactSplatsCS> ComputeShader(GetGlobalShaderMap(GMaxRHIFeatureLevel));
-	if (!ComputeShader.IsValid())
+	if (!ResetShader.IsValid() || !ComputeShader.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("FCompactSplatsCS shader not valid"));
+		UE_LOG(LogTemp, Warning, TEXT("CompactSplats shaders not valid"));
 		return;
 	}
-
-	// Reset visible splat count to 0
-	uint32 Zero = 0;
-	void* Data = RHICmdList.LockBuffer(GPUResources->VisibleSplatCountBuffer, 0, sizeof(uint32), RLM_WriteOnly);
-	FMemory::Memcpy(Data, &Zero, sizeof(uint32));
-	RHICmdList.UnlockBuffer(GPUResources->VisibleSplatCountBuffer);
 
 	// Transition buffers
 	RHICmdList.Transition(FRHITransitionInfo(GPUResources->CompactedSplatIndicesBuffer, ERHIAccess::Unknown, ERHIAccess::UAVCompute));
 	RHICmdList.Transition(FRHITransitionInfo(GPUResources->VisibleSplatCountBuffer, ERHIAccess::Unknown, ERHIAccess::UAVCompute));
+
+	// Reset visible splat count to 0 on GPU (avoids CPU LockBuffer which asserts in Vulkan inside render passes)
+	{
+		FCompactSplatsResetCS::FParameters ResetParams;
+		ResetParams.VisibleSplatCount = GPUResources->VisibleSplatCountBufferUAV;
+
+		SetComputePipelineState(RHICmdList, ResetShader.GetComputeShader());
+		SetShaderParameters(RHICmdList, ResetShader, ResetShader.GetComputeShader(), ResetParams);
+		RHICmdList.DispatchComputeShader(1, 1, 1);
+		UnsetShaderUAVs(RHICmdList, ResetShader, ResetShader.GetComputeShader());
+
+		// Ensure reset write completes before compaction InterlockedAdd
+		RHICmdList.Transition(FRHITransitionInfo(GPUResources->VisibleSplatCountBuffer, ERHIAccess::UAVCompute, ERHIAccess::UAVCompute));
+	}
 
 	FCompactSplatsCS::FParameters Parameters;
 	Parameters.SplatClusterIndexBuffer = GPUResources->SplatClusterIndexBufferSRV;

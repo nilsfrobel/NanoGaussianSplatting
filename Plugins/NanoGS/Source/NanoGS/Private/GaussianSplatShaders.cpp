@@ -21,6 +21,7 @@ IMPLEMENT_GLOBAL_SHADER(FClusterCullingResetCS, "/Plugin/NanoGS/Private/ClusterC
 IMPLEMENT_GLOBAL_SHADER(FClusterCullingCS, "/Plugin/NanoGS/Private/ClusterCulling.usf", "MainCS", SF_Compute);
 
 // Splat compaction shaders (GPU-driven work reduction)
+IMPLEMENT_GLOBAL_SHADER(FCompactSplatsResetCS, "/Plugin/NanoGS/Private/CompactSplats.usf", "ResetCounterCS", SF_Compute);
 IMPLEMENT_GLOBAL_SHADER(FCompactSplatsCS, "/Plugin/NanoGS/Private/CompactSplats.usf", "MainCS", SF_Compute);
 IMPLEMENT_GLOBAL_SHADER(FPrepareIndirectArgsCS, "/Plugin/NanoGS/Private/PrepareIndirectArgs.usf", "MainCS", SF_Compute);
 
