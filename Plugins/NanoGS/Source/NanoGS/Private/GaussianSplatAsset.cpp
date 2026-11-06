@@ -441,7 +441,9 @@ void UGaussianSplatAsset::CreateColorTextureFromData()
 	ColorTexture->AddressY = TA_Clamp;
 	ColorTexture->NeverStream = true;
 	ColorTexture->LODGroup = TEXTUREGROUP_Pixels2D;
+#if WITH_EDITORONLY_DATA
 	ColorTexture->MipGenSettings = TMGS_NoMipmaps;
+#endif
 
 	// Create mip 0
 	FTexture2DMipMap* Mip = new FTexture2DMipMap();
@@ -885,7 +887,9 @@ void UGaussianSplatAsset::CreateThumbnailTextureFromData()
 	ThumbnailTexture->CompressionSettings = TC_Default;
 	ThumbnailTexture->Filter           = TF_Bilinear;
 	ThumbnailTexture->NeverStream      = true;
+#if WITH_EDITORONLY_DATA
 	ThumbnailTexture->MipGenSettings   = TMGS_NoMipmaps;
+#endif
 
 	FTexture2DMipMap* Mip = new FTexture2DMipMap();
 	PlatformData->Mips.Add(Mip);
